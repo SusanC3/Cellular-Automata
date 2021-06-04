@@ -24,8 +24,7 @@ public class ColorPalette {
 			if (cyclesDead < cycleSeg*(i+1) ) {
 				cyclesDead -= cycleSeg*i;
 				Color last = colors[i];
-				Color next = colors[i+1];
-				//try to improve rounding if it looks bad			
+				Color next = colors[i+1];		
 				return new Color(last.getRed() - ((last.getRed() - next.getRed()) / cycleSeg)*cyclesDead, 
 						last.getGreen() - ((last.getGreen() - next.getGreen()) / cycleSeg)*cyclesDead, 
 						last.getBlue() - ((last.getBlue() - next.getBlue()) / cycleSeg)*cyclesDead);

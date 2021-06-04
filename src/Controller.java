@@ -3,10 +3,11 @@ import java.awt.event.*;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
-public class Controller implements KeyListener, ActionListener{
+public class Controller implements KeyListener, ActionListener, MouseListener{
 	private Model M;
 	private View V;
 	private ConwayPanel conwayPanel;
+	private SandboxPanel sandboxPanel;
 	private ColorPaletteFrame colorPaletteFrame;
 	private InputFrame inputFrame;
 	private DimensionsFrame dimFrame;
@@ -20,8 +21,10 @@ public class Controller implements KeyListener, ActionListener{
 		
 		this.conwayPanel = V.getConwayPanel();
 		conwayPanel.addKeyListener(this);
+		this.sandboxPanel = V.getSandboxPanel();
+		sandboxPanel.addKeyListener(this); 
+		sandboxPanel.addMouseListener(this);
 
-		//action listener for color palette frame stuff?
 		this.colorPaletteFrame = V.getColorPaletteFrame();
 		colorPaletteFrame.registerActionListeners(this);
 		
@@ -38,20 +41,42 @@ public class Controller implements KeyListener, ActionListener{
 	@Override
 	public void keyPressed(KeyEvent evt) {
 		if (evt.getKeyCode() == KeyEvent.VK_SPACE) {
-			conwayPanel.setPaused(!conwayPanel.getPaused());
+			if (M.inSandboxMode()) sandboxPanel.setPaused(!sandboxPanel.getPaused());
+			else conwayPanel.setPaused(!conwayPanel.getPaused());
 		}
 		if (evt.getKeyCode() == KeyEvent.VK_RIGHT) {
 			M.doConwayCycle(M.getInput());
 		}
 		
-		conwayPanel.repaint();
-        conwayPanel.requestFocusInWindow();	
+		if (M.inSandboxMode()) {
+			sandboxPanel.repaint();
+			sandboxPanel.requestFocusInWindow();	
+		}
+		else {
+			conwayPanel.repaint();
+			conwayPanel.requestFocusInWindow();	
+		}
+       
 	}
 	
 	@Override
 	public void actionPerformed(ActionEvent evt) {
-		conwayPanel.setPaused(true);
+		if (conwayPanel.getPaused() == false) conwayPanel.setPaused(true);
 		String command = evt.getActionCommand();
+		if (command.equals("Enter Sandbox Mode") || command.equals("Clear Grid")) {
+			V.enterSandboxMode();
+		}
+		if (command.equals("Exit Sandbox Mode")) {
+			V.enterGenerationMode();
+		}
+		if (command.equals("Fast Growing Example")) {
+			V.enterSandboxMode();
+			M.setupFastGrowExample();			
+		}
+		if (command.equals("Glider Gun Example")) {
+			V.enterSandboxMode();
+			M.setupGliderExample();
+		}
 		if (command.equals("Color Palette")) colorPaletteFrame.open();
 		if (command.equals("numColorsPicked")) colorPaletteFrame.pickColorsSetup();
 		if (command.equals("color picked rgb")) {
@@ -68,9 +93,11 @@ public class Controller implements KeyListener, ActionListener{
 		
 		if (command.equals("Input")) inputFrame.open();
 		if (command.equals("input entered")) {
-			inputFrame.setInput();
-			M.initGrid();
-			conwayPanel.repaint();
+			if (inputFrame.setInput()) {
+				M.initGrid();
+				conwayPanel.setPaused(false);
+				conwayPanel.repaint();
+			}
 		}
 		if (command.equals("random gen")) {
 			inputFrame.backToRandom();
@@ -80,28 +107,49 @@ public class Controller implements KeyListener, ActionListener{
 		
 		if (command.equals("Dimensions")) dimFrame.open();
 		if (command.equals("dimensions entered")) {
-			while (dimFrame.checkForError()) continue; //keep doing it until no error
-			M.setDimensions(dimFrame.getRows(), dimFrame.getColumns());
-			V.setSize(M.getCellSize()*M.getColumns(), M.getCellSize()*M.getRows() + 30);
-			M.initGrid();
+			if (!dimFrame.checkForError()) {
+				M.setDimensions(dimFrame.getRows(), dimFrame.getColumns());
+				M.setCellSize(dimFrame.getCellSize());
+				V.setSize(M.getCellSize()*M.getColumns(), M.getCellSize()*M.getRows() + 30);
+				M.initGrid();
+			}
 		}
 		
 		if (command.equals("Conway's Game of Life")) infoFrame.displayConwayInfo();
 		if (command.equals("Simpler CA Input")) infoFrame.displayInputInfo();
+		if (command.equals("Sandbox Mode")) infoFrame.displaySandboxInfo();
 		if (command.equals("Controls")) infoFrame.displayControlsInfo();
 		
 		if (command.equals("Go to simulation")) {
-			if (V.isOpen()) {
-				infoFrame.dispatchEvent(new WindowEvent(infoFrame, WindowEvent.WINDOW_CLOSING));
-			}
-			else V.open();
+			infoFrame.dispatchEvent(new WindowEvent(infoFrame, WindowEvent.WINDOW_CLOSING));
+			V.open();
 		}
 		
-		conwayPanel.requestFocusInWindow();
+		if (M.inSandboxMode()) {
+			sandboxPanel.repaint();
+			sandboxPanel.requestFocusInWindow();	
+		}
+		else {
+			conwayPanel.repaint();
+			conwayPanel.requestFocusInWindow();	
+		}
 	}
 
 
+	@Override
+	public void mouseClicked(MouseEvent evt) {
+		if (M.inSandboxMode()) {
+			M.toggleLivingStatus(evt.getX(), evt.getY());
+			sandboxPanel.repaint();
+			sandboxPanel.requestFocusInWindow();
+		}
+	}
+
 	public void keyReleased(KeyEvent arg0) {}
 	public void keyTyped(KeyEvent arg0) {}
+	public void mouseEntered(MouseEvent arg0) {}
+	public void mouseExited(MouseEvent arg0) {}
+	public void mousePressed(MouseEvent arg0) {}
+	public void mouseReleased(MouseEvent arg0) {}
 
 }

@@ -11,6 +11,8 @@ public class Runner {
 		Controller c = new Controller(m, v);
 		File f = new File("f.txt");
 		v.getInfoFrame().displayConwayInfo();
+		//the below is so the instructions don't show up at the beginning every time
+		//but I kind of want them to? idk
 	/*	if (f.createNewFile()) {
 			v.getInfoFrame().displayConwayInfo();
 		}

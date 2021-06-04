@@ -24,8 +24,6 @@ public class ColorPaletteFrame extends JFrame{
 	
 	private ArrayList<Color> colors;
 	
-	//why don't the colors work
-	// https://coolors.co/355070-6d597a-b56576-e56b6f-eaac8b
 	
 	public void setNextColor(Color newColor) { 
 		if (newColor == null) colors.remove(Math.max(0, index-1)); //index has been increased by the time this is called
@@ -52,6 +50,7 @@ public class ColorPaletteFrame extends JFrame{
 	
 	public void open() {
 		index = 0;
+		numColors = 1;
 		this.setTitle("Color Palette");
 	    this.pack();
 	    this.setSize(400, 200);
@@ -61,8 +60,6 @@ public class ColorPaletteFrame extends JFrame{
 	    pickNumColors();
 	    
 	}
-	
-	//HAVE IT AUTO PAUSE WHEN YOU CHOOSE COLOR
 	
 	public void pickNumColors() {
 		JPanel numColorsPanel = new JPanel();

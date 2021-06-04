@@ -45,24 +45,25 @@ public class InputFrame extends JFrame{
 	    this.setVisible(true);    
 	}
 	
-	public void setInput() {
+	public boolean setInput() {
 		String input = entry.getText();
-		if (input == null) return;
+		if (input == null) return true;
 		input = input.strip();
 		if (input.length() > 8) {
 			displayErrorMessage("Your input is too long.");
-			return;
+			return false;
 		}
 		for (int i = 0; i < input.length(); i++) {
 			char c = input.charAt(i);
 			if (c != '0' && c != '1') {
 				displayErrorMessage(c + " isn't a 0 or 1.");
-				return;
+				return false;
 			}
 		}
 		while (input.length() < 8) input = "0" + input;
 		I.setBinary(input);
 		this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+		return true;
 	}
 	
 	public void registerActionListeners(ActionListener l) {

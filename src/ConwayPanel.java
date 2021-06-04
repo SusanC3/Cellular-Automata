@@ -3,8 +3,8 @@ import javax.swing.*;
 
 public class ConwayPanel extends JPanel{
 	
-	Model M;
-	private boolean paused = false; 
+	protected Model M;
+	protected boolean paused = false; 
 	
 	public boolean getPaused() {return this.paused;}
 	public void setPaused(boolean n) {this.paused = n;}

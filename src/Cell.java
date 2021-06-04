@@ -14,7 +14,7 @@ public class Cell {
 	public int isAlive() { return this.alive; }
 	public void setLivingStatus(int newAlive) { 
 		this.alive = newAlive; 
-		if (this.alive == 1) { this.color = Color.white; this.cyclesDead = 0; }
+		if (this.alive == 1) { this.color = Color.white; this.cyclesDead = 0;}
 		if (this.alive == 0) this.color = Color.black;	 
 	}
 	public int getCyclesDead() { return this.cyclesDead; }
