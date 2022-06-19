@@ -1,3 +1,4 @@
 # Cellular-Automata
 
-Version 1.1.
+A grid-based cellular automata simulator!
+Watch video compilation: https://www.youtube.com/watch?v=dc4Iij_VFTQ
