@@ -13,7 +13,7 @@ public class ColorPalette {
 	
 	public ColorPalette() { //note that first color needs to be white
 		this.colors = new Color[] {new Color(255, 255, 255), new Color(86, 207, 225), 
-				new Color(78, 168, 222), new Color(94, 96, 206), new Color(116, 0, 184), new Color(0, 0, 0)};
+				new Color(78, 168, 222), new Color(94, 96, 206), new Color(116, 1, 184), new Color(0, 0, 0)};
 		this.cycleLength = 100;	
 	}
 	

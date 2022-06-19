@@ -1,6 +1,10 @@
 import java.awt.Color;
+
 import java.awt.TextField;
 import java.awt.event.*;
+import java.io.*;
+import java.util.*;
+
 import javax.swing.*;
 
 public class InputFrame extends JFrame{
@@ -9,18 +13,50 @@ public class InputFrame extends JFrame{
 	private JLabel errorL;
 	private JPanel panel;
 	
-	private JButton okB;
+	private JButton okB1;
+	private JButton okB2;
 	private JButton randomB;
 	TextField entry;
+	private JComboBox favoritesCB;
+	
+	private SaveFrame saveFrame;
+	File saved = new File ("savedInputs.txt");
+	
+	private String[] favoriteInputs = {};
 	
 	public InputFrame(Input i) {
 		this.I = i;
-		okB = new JButton("OK");
-		okB.setActionCommand("input entered");
+		okB1 = new JButton("OK");
+		okB1.setActionCommand("input entered");
+		okB2 = new JButton("OK");
+		okB2.setActionCommand("input selected");
 		randomB = new JButton("random gen");
 		errorL = new JLabel("");
 		entry = new TextField(8);
+		saveFrame = new SaveFrame(null, "input");
+		
+//		try { saved.createNewFile(); }
+//		catch (IOException e) { e.printStackTrace(); }
+		
+		//read favoriteInputs from file
+		try { 
+			ArrayList<String> temp = new ArrayList<String>();
+			BufferedReader br = new BufferedReader(new FileReader(saved));
+			String binary;
+		    while ((binary = br.readLine()) != null) {
+		       temp.add(binary);
+		    }
+		    favoriteInputs = new String[temp.size()];
+		    for (int j = 0; j < favoriteInputs.length; j++) favoriteInputs[j] = temp.get(j);
+		} catch (Exception e) { e.printStackTrace(); }
+		
+		favoritesCB = new JComboBox(favoriteInputs); //gotta do this every time i make it a new array cause otherwise it still points to the old one
 	}
+	
+	public String getComboSelectedItem() { return (String)favoritesCB.getSelectedItem(); } //should always be a string
+	public void setEntryText(String text) { entry.setText(text); }
+	public Input getInput() { return I; }
+	public SaveFrame getSaveFrame() { return saveFrame; }
 	
 	public void open() {
 		this.setTitle("Set Input");
@@ -34,10 +70,12 @@ public class InputFrame extends JFrame{
 		panel.add(directionsL2);
 		
 		panel.add(entry);
-		panel.add(okB);	
+		panel.add(okB1);	
 		panel.add(randomB);
 		panel.add(errorL);
-		
+		panel.add(new JLabel("Or choose from one of my favorites:"));
+		panel.add(favoritesCB);	
+		panel.add(okB2);
 		
 		this.pack();
 	    this.setSize(400, 200);
@@ -66,9 +104,12 @@ public class InputFrame extends JFrame{
 		return true;
 	}
 	
+	
 	public void registerActionListeners(ActionListener l) {
-		okB.addActionListener(l);
+		okB1.addActionListener(l);
+		okB2.addActionListener(l);
 		randomB.addActionListener(l);
+		favoritesCB.addActionListener(l);
 	}
 	
 	public void backToRandom()
@@ -81,6 +122,32 @@ public class InputFrame extends JFrame{
 		errorL.setText(message);
 		errorL.setForeground(Color.RED);
 		panel.repaint();
+	}
+	
+	public void saveInput() {
+		System.out.println("here");
+		String currInput = I.getBinary();
+		//don't save input already there
+		for (String s : favoriteInputs) {
+			if (s.equals(currInput)) return; //we don't need to save it
+		}
+	    try {
+	    	FileWriter writer = new FileWriter(saved, true);
+			writer.append(currInput + '\n'); 
+			writer.close();
+			//gotta redo array as well
+			ArrayList<String> temp = new ArrayList<String>();
+  			BufferedReader br = new BufferedReader(new FileReader(saved));
+  			String binary;
+  		    while ((binary = br.readLine()) != null) {
+  		       temp.add(binary);
+  		    }
+  		    System.out.println("favorite inputs being modified");
+  		    favoriteInputs = new String[temp.size()];
+  		    for (int j = 0; j < favoriteInputs.length; j++) favoriteInputs[j] = temp.get(j);
+		} catch (IOException e) { e.printStackTrace(); }   
+	    	
+	  	favoritesCB = new JComboBox(favoriteInputs); //gotta do this every time i make it a new array cause otherwise it still points to the old one
 	}
 	
 	

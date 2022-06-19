@@ -51,7 +51,7 @@ public class DimensionsFrame extends JFrame {
 		panel.add(errorL);
 		
 		this.pack();
-	    this.setSize(400, 200);
+	    this.setSize(350, 200);
 	    this.setLocationRelativeTo(null);
 	    this.setVisible(true);  
 	}
@@ -82,6 +82,6 @@ public class DimensionsFrame extends JFrame {
 			return true;
 		}
 		this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
-		return false; //try worked so rows and columns have been set
+		return false; //try catch worked so rows and columns have been set
 	}
 }

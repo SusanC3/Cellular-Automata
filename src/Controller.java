@@ -1,17 +1,18 @@
 import java.awt.event.*;
 
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
+import javax.swing.*;
 
 public class Controller implements KeyListener, ActionListener, MouseListener{
 	private Model M;
 	private View V;
 	private ConwayPanel conwayPanel;
+	private ControlPanel controlPanel;
 	private SandboxPanel sandboxPanel;
 	private ColorPaletteFrame colorPaletteFrame;
 	private InputFrame inputFrame;
 	private DimensionsFrame dimFrame;
 	private InfoFrame infoFrame;
+	private RuleFrame ruleFrame;
 	
 	public Controller(Model m, View v) {
 		this.M = m;
@@ -21,6 +22,8 @@ public class Controller implements KeyListener, ActionListener, MouseListener{
 		
 		this.conwayPanel = V.getConwayPanel();
 		conwayPanel.addKeyListener(this);
+		this.controlPanel = V.getControlPanel();
+		controlPanel.registerActionListeners(this);
 		this.sandboxPanel = V.getSandboxPanel();
 		sandboxPanel.addKeyListener(this); 
 		sandboxPanel.addMouseListener(this);
@@ -36,15 +39,33 @@ public class Controller implements KeyListener, ActionListener, MouseListener{
 		
 		this.infoFrame = V.getInfoFrame();
 		infoFrame.registerActionListeners(this);
+		
+		this.ruleFrame = V.getRuleFrame();
+		ruleFrame.registerActionListeners(this); 
+		
+		inputFrame.getSaveFrame().registerokBActionListener(this);
+		colorPaletteFrame.getSaveFrame().registerokBActionListener(this);
+		ruleFrame.getSaveFrame().registerokBActionListener(this);
 	}
 	
 	@Override
 	public void keyPressed(KeyEvent evt) {
 		if (evt.getKeyCode() == KeyEvent.VK_SPACE) {
-			if (M.inSandboxMode()) sandboxPanel.setPaused(!sandboxPanel.getPaused());
-			else conwayPanel.setPaused(!conwayPanel.getPaused());
+			if (M.inSandboxMode()) {
+				sandboxPanel.setPaused(!sandboxPanel.getPaused());
+				if (sandboxPanel.getPaused()) controlPanel.getPauseB().setText("Play");
+				else controlPanel.getPauseB().setText("Pause");
+			}
+			else {
+				conwayPanel.setPaused(!conwayPanel.getPaused());
+				if (conwayPanel.getPaused()) controlPanel.getPauseB().setText("Play");
+				else controlPanel.getPauseB().setText("Pause");
+			}
+			
 		}
 		if (evt.getKeyCode() == KeyEvent.VK_RIGHT) {
+			conwayPanel.setPaused(true);
+			controlPanel.getPauseB().setText("Play");
 			M.doConwayCycle(M.getInput());
 		}
 		
@@ -61,8 +82,66 @@ public class Controller implements KeyListener, ActionListener, MouseListener{
 	
 	@Override
 	public void actionPerformed(ActionEvent evt) {
-		if (conwayPanel.getPaused() == false) conwayPanel.setPaused(true);
 		String command = evt.getActionCommand();
+		if (conwayPanel.getPaused() == false && !(command.equals("Pause") || command.equals("Play"))) 
+			conwayPanel.setPaused(true);
+		
+		if (command.contains("nothing to save")) {
+			if (command.contains("input")) inputFrame.getSaveFrame().dispatchEvent(new WindowEvent(inputFrame.getSaveFrame(), WindowEvent.WINDOW_CLOSING));
+		}
+		if (command.equals("Save input rule")) {
+			if (inputFrame.getInput().getBinary() == null) 
+				inputFrame.getSaveFrame().setCurrState(null);
+			else {
+				JPanel j = new JPanel();
+				j.add(new JLabel(inputFrame.getInput().getBinary()));
+				inputFrame.getSaveFrame().setCurrState(j);
+			}
+			inputFrame.getSaveFrame().open();				
+		}
+		if (command.equals("input saved")) {
+			inputFrame.saveInput();
+			inputFrame.getSaveFrame().dispatchEvent(new WindowEvent(inputFrame.getSaveFrame(), WindowEvent.WINDOW_CLOSING));
+		}
+		if (command.equals("Save color palette")) {
+			colorPaletteFrame.getSaveFrame().setCurrState(colorPaletteFrame.getCurrPalettePanel());
+			colorPaletteFrame.getSaveFrame().open();
+		}
+		if (command.equals("color palette saved")) {
+			colorPaletteFrame.savePalette();
+			colorPaletteFrame.getSaveFrame().dispatchEvent(new WindowEvent(colorPaletteFrame.getSaveFrame(), WindowEvent.WINDOW_CLOSING));
+		}
+		if (command.equals("Save CA rule")) {
+			ruleFrame.getSaveFrame().setCurrState(ruleFrame.getCurrRulePanel());
+			ruleFrame.getSaveFrame().open();
+		}
+		if (command.equals("rule saved")) {
+			ruleFrame.saveRule();
+			ruleFrame.getSaveFrame().dispatchEvent(new WindowEvent(inputFrame.getSaveFrame(), WindowEvent.WINDOW_CLOSING));
+		}
+		
+		if (command.equals("Pause") || command.equals("Play")) {
+			if (M.inSandboxMode()) {
+				sandboxPanel.setPaused(!sandboxPanel.getPaused());
+				if (sandboxPanel.getPaused()) controlPanel.getPauseB().setText("Play");
+				else controlPanel.getPauseB().setText("Pause");
+			}
+			else {
+				conwayPanel.setPaused(!conwayPanel.getPaused());
+				if (conwayPanel.getPaused()) controlPanel.getPauseB().setText("Play");
+				else controlPanel.getPauseB().setText("Pause");
+			}
+		}
+		if (command.equals("Step Through")) {
+			conwayPanel.setPaused(true);
+			controlPanel.getPauseB().setText("Play");
+			M.doConwayCycle(M.getInput());
+		}
+		if (command.equals("Reset")) {     
+			M.reset();
+			V.open();
+		}
+		
 		if (command.equals("Enter Sandbox Mode") || command.equals("Clear Grid")) {
 			V.enterSandboxMode();
 		}
@@ -78,18 +157,19 @@ public class Controller implements KeyListener, ActionListener, MouseListener{
 			M.setupGliderExample();
 		}
 		if (command.equals("Color Palette")) colorPaletteFrame.open();
-		if (command.equals("numColorsPicked")) colorPaletteFrame.pickColorsSetup();
-		if (command.equals("color picked rgb")) {
-			colorPaletteFrame.setNextColor(colorPaletteFrame.getRGBColor());
-			colorPaletteFrame.pickColor(); 
+		if (command.equals("palette selected")) {
+			int index = colorPaletteFrame.getComboIndex();
+			ColorPalette c = colorPaletteFrame.getComboIndexToPalette(index);
+			colorPaletteFrame.getPalette().setColors(c.getColors());
+			colorPaletteFrame.dispatchEvent(new WindowEvent(colorPaletteFrame, WindowEvent.WINDOW_CLOSING));
 		}
+		if (command.equals("numColorsPicked")) colorPaletteFrame.pickColorsSetup();
 		if (command.equals("color picked chooser")) {
 			colorPaletteFrame.setNextColor(colorPaletteFrame.getChooserColor());
 			colorPaletteFrame.pickColor(); 
 		}
 			
-		if (command.equals("rgb")) colorPaletteFrame.pickRGBColor();
-		if (command.equals("colorChooser")) colorPaletteFrame.pickColorChooser();
+		if (command.equals("customPalette")) colorPaletteFrame.pickNumColors();
 		
 		if (command.equals("Input")) inputFrame.open();
 		if (command.equals("input entered")) {
@@ -98,6 +178,13 @@ public class Controller implements KeyListener, ActionListener, MouseListener{
 				conwayPanel.setPaused(false);
 				conwayPanel.repaint();
 			}
+		}
+		if (command.equals("input selected")) {	
+			inputFrame.getInput().setBinary(inputFrame.getComboSelectedItem());
+			inputFrame.dispatchEvent(new WindowEvent(inputFrame, WindowEvent.WINDOW_CLOSING));
+			M.initGrid();
+			conwayPanel.setPaused(false);
+			conwayPanel.repaint();
 		}
 		if (command.equals("random gen")) {
 			inputFrame.backToRandom();
@@ -120,9 +207,24 @@ public class Controller implements KeyListener, ActionListener, MouseListener{
 		if (command.equals("Sandbox Mode")) infoFrame.displaySandboxInfo();
 		if (command.equals("Controls")) infoFrame.displayControlsInfo();
 		
-		if (command.equals("Go to simulation")) {
+		if (command.equals("Go To Simulation")) {
 			infoFrame.dispatchEvent(new WindowEvent(infoFrame, WindowEvent.WINDOW_CLOSING));
 			V.open();
+		}
+		if (command.equals("Change CA Rule")) ruleFrame.open();
+		if (command.equals("picked rule")) { 
+			ruleFrame.selectRule();
+			ruleFrame.dispatchEvent(new WindowEvent(ruleFrame, WindowEvent.WINDOW_CLOSING));	
+		}
+		if (command.equals("Make custom rule")) ruleFrame.pickDieNeighbors();
+		if (command.equals("picked die neighbors")) {
+			ruleFrame.addDieNeighbors();
+			ruleFrame.pickReviveNeighbors();
+		}
+		if (command.equals("picked revive neighbors")) {
+			ruleFrame.addReviveNeighbors();
+			ruleFrame.setRules();
+			ruleFrame.dispatchEvent(new WindowEvent(ruleFrame, WindowEvent.WINDOW_CLOSING));		
 		}
 		
 		if (M.inSandboxMode()) {

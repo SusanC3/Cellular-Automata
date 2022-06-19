@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 
 public class View extends JFrame{
 	
@@ -9,12 +10,22 @@ public class View extends JFrame{
 		
 	Model M; 
 	ColorPalette palette;
+	private Rule rule;
 	private ConwayPanel conwayPanel;
+	private ControlPanel controlPanel;
 	private SandboxPanel sandboxPanel;
 	private ColorPaletteFrame colorPaletteFrame;
 	private InputFrame inputFrame;
 	private DimensionsFrame dimFrame;
 	private InfoFrame infoFrame;
+	private RuleFrame ruleFrame;
+	
+	private JMenuItem saveCurrConfig;
+	private JMenuItem saveInitConfig;
+	private JMenuItem chooseConfig;
+	private JMenuItem savePalette;
+	private JMenuItem saveInput;
+	private JMenuItem saveRule;
 	
 	private JMenuItem color;
 	private JMenuItem dimensions;
@@ -34,11 +45,13 @@ public class View extends JFrame{
 	
 	
 	public ConwayPanel getConwayPanel() {return this.conwayPanel;}
+	public ControlPanel getControlPanel() {return this.controlPanel;}
 	public SandboxPanel getSandboxPanel() {return this.sandboxPanel;}
 	public ColorPaletteFrame getColorPaletteFrame() {return this.colorPaletteFrame;}
 	public InputFrame getInputFrame() {return this.inputFrame; }
 	public DimensionsFrame getDimFrame() {return this.dimFrame; }
 	public InfoFrame getInfoFrame() {return this.infoFrame; }
+	public RuleFrame getRuleFrame() {return this.ruleFrame; }
 	
 	public void setSandboxModeMenuText(String s) { 
 		goSandboxMode.setText(s);
@@ -47,19 +60,38 @@ public class View extends JFrame{
 	
 	public View (Model m) {
 		super("Cellular Automata");
+		setLayout(new BorderLayout());
 		
 		this.M = m;
 		this.palette = M.getColorPalette();
+		this.rule = M.getRule();
 		this.conwayPanel = new ConwayPanel(M);
+		this.controlPanel = new ControlPanel();
 		this.sandboxPanel = new SandboxPanel(M);
 		this.colorPaletteFrame = new ColorPaletteFrame(M.getColorPalette());
 		this.inputFrame = new InputFrame(M.getInput());
 		this.dimFrame = new DimensionsFrame(M.getRows(), M.getColumns(), M.getCellSize());
 		this.infoFrame = new InfoFrame();
+		this.ruleFrame = new RuleFrame(rule);
 		
 	    
 	    JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
+        
+        JMenu save = new JMenu("Save");
+        menuBar.add(save);
+        saveCurrConfig = new JMenuItem("Save current configuration");
+    //    save.add(saveCurrConfig);
+        saveInitConfig = new JMenuItem("Save initial configuration");
+   //     save.add(saveInitConfig);
+        chooseConfig = new JMenuItem("Choose Saved Configuration");
+    //    save.add(chooseConfig); 
+        savePalette = new JMenuItem("Save color palette");
+        save.add(savePalette);
+        saveInput = new JMenuItem("Save input rule");
+        save.add(saveInput);
+        saveRule = new JMenuItem("Save CA rule");
+        save.add(saveRule);
         
         JMenu appearance = new JMenu("Appearance");
         menuBar.add(appearance);
@@ -68,12 +100,13 @@ public class View extends JFrame{
         dimensions = new JMenuItem("Dimensions");
         appearance.add(dimensions);
         
+        
         JMenu settings = new JMenu("Settings");
         menuBar.add(settings);
         input = new JMenuItem("Input");
         settings.add(input);
         CARules = new JMenuItem("Change CA Rule");
-       // settings.add(CARules); //for the future :3
+        settings.add(CARules); //for the future :3
         
         JMenu info = new JMenu("Info");
         menuBar.add(info);
@@ -97,25 +130,26 @@ public class View extends JFrame{
         gliderEx = new JMenuItem("Glider Gun Example");
         sandbox.add(gliderEx);   
         
-        JMenu pauseMessage = new JMenu("Remember to hit the space bar to pause/play!");
-        menuBar.add(pauseMessage);
 	}
 	
 	public void open() { 
 	    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    enterGenerationMode();
-	    setLocationRelativeTo(null); //i read that this works on stackoverflow... i hope it works on your computer lol
+	    add(controlPanel, BorderLayout.SOUTH);
+	    setLocationRelativeTo(null); 
 	    setVisible(true);
 	    isOpen = true;
 	}
 	
 	public void enterGenerationMode() {
+		
 		conwayPanel.setPaused(false);
 		palette.setColors(new Color[] {new Color(255, 255, 255), new Color(86, 207, 225), 
 				new Color(78, 168, 222), new Color(94, 96, 206), new Color(116, 0, 184), new Color(0, 0, 0)});
 		palette.setCycleLength(100);
 		M.setInSandboxMode(false);
-		setContentPane(conwayPanel);
+		remove(sandboxPanel);
+		add(conwayPanel, BorderLayout.CENTER);
 		validate();
 		pack();
 		M.setCellSize(5);
@@ -128,7 +162,8 @@ public class View extends JFrame{
 		palette.setColors(new Color[] {Color.WHITE, Color.BLACK});
 		palette.setCycleLength(2);
 		M.setInSandboxMode(true);
-		setContentPane(sandboxPanel);
+		remove(conwayPanel);
+		add(sandboxPanel, BorderLayout.CENTER);
 		validate();
 		pack();
 		M.setCellSize(10);
@@ -138,6 +173,13 @@ public class View extends JFrame{
 	}
 	
 	public void registerActionListeners(ActionListener l) {
+		saveCurrConfig.addActionListener(l);
+		saveInitConfig.addActionListener(l);
+		chooseConfig.addActionListener(l);
+		savePalette.addActionListener(l);
+		saveInput.addActionListener(l);
+		saveRule.addActionListener(l);
+		
 		color.addActionListener(l);
 		dimensions.addActionListener(l);
 

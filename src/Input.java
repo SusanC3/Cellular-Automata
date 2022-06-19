@@ -1,6 +1,16 @@
 import java.awt.Color;
 import java.util.*;
 
+/* Good inputs
+ * 01000101 (69)
+ * 		but tbh 00100111 is better
+ * 10101011 is kinda nice
+ * 10000001 cause triangles
+ * 01001011 maybe i'm too attatched but there was this nice butterfly pattern like thing on the right after a bit
+ * 11011011 the input is really symetrical & it reaches stablity quickly
+ * 00011110 (30) is an exception to the twin peaks but it is still interesting
+ */
+
 public class Input {
 	String binary = null;
 	
@@ -26,21 +36,18 @@ public class Input {
 	
 	public void update(Cell[][] grid) {
 		//move up rows
-
 		for (int i = (grid.length/2)-1; i < grid.length-1; i++) { 
 			for (int j = 0; j < grid[i].length; j++) { //deep copy
 				if (grid[i][j].isAlive() == 0) grid[i][j].incrementCyclesDead();
-		//		else System.out.println(i + " " + j);
 				grid[i-1][j] = grid[i][j].makeCopy();
 			}
-		}
-		
+		}	
 		//use rule to make bottom row
 		for (int j = 1; j < grid[0].length-1; j++) {
 			int[] key = { grid[grid.length-3][j-1].isAlive() , grid[grid.length-3][j].isAlive() , grid[grid.length-3][j+1].isAlive() }; //3 cells above grid[1][i]
 			grid[grid.length-2][j].setLivingStatus(inputMap(key));
 		} 
 		
-		
 	}
+
 }
