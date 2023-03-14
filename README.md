@@ -1,4 +1,4 @@
 # Cellular-Automata
 
 A grid-based cellular automata simulator!
-Watch video compilation: https://www.youtube.com/watch?v=dc4Iij_VFTQ
+[Visit website](https://susanc3.github.io/cellular-automata.html)
